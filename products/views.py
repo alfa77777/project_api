@@ -5,7 +5,9 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 
 from paginations import CustomPageNumberPagination
 from products.models import Product
-from products.serializers import ProductListSerializer, ProductCreateSerializer
+from products.models.comment import Comment
+from products.serializers import ProductListSerializer, ProductCreateSerializer, CommentCreateSerializer, \
+    CommentListSerializer
 
 
 class ProductListCreateView(generics.ListCreateAPIView):
@@ -74,3 +76,27 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     #
     # def destroy(self, request, *args, **kwargs):
     #     return super().destroy(request, *args, **kwargs)
+
+
+class CommentListCreateView(generics.ListCreateAPIView):
+    queryset = Comment.objects.order_by("-id")
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
+    filterset_fields = ("product", "timestamp")
+    ordering_fields = ("product",)
+    pagination_class = CustomPageNumberPagination
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CommentCreateSerializer
+        return CommentListSerializer
+
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    # serializer_class = ProductListSerializer
+    lookup_field = "id"
+
+    def get_serializer_class(self):
+        if self.request.method in ["PUT", "PATCH"]:
+            return CommentCreateSerializer
+        return CommentListSerializer

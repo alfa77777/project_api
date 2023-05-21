@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from common.models import Category
 from products.models import Product
+from products.models.comment import Comment
+from users.models import User
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -33,4 +35,43 @@ class ProductCreateSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["category"] = ProductCategorySerializer(instance.category).data
+        return data
+
+
+class CommentList(serializers.ModelSerializer):
+    model = Comment
+    fields = "__all__"
+
+
+class CommentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("email",)
+
+
+class CommentProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ("title",)
+
+
+class CommentListSerializer(serializers.ModelSerializer):
+    user = CommentUserSerializer()
+    product = CommentProductSerializer()
+
+    class Meta:
+        model = Comment
+        fields = "__all__"
+
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["user"] = CommentUserSerializer(instance.user).data
+        data["product"] = CommentProductSerializer(instance.product).data
         return data
