@@ -1,13 +1,18 @@
 from django.db.models import Q
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from paginations import CustomPageNumberPagination
-from products.models import Product
+from products.models import Product, LikeDislike
 from products.models.comment import Comment
 from products.serializers import ProductListSerializer, ProductCreateSerializer, CommentCreateSerializer, \
-    CommentListSerializer
+    CommentListSerializer, BlogLikeDislikeSerializer
 
 
 class ProductListCreateView(generics.ListCreateAPIView):
@@ -22,26 +27,6 @@ class ProductListCreateView(generics.ListCreateAPIView):
         if self.request.method == "POST":
             return ProductCreateSerializer
         return ProductListSerializer
-
-    # def get_queryset(self):
-    #     queryset = super().get_queryset()
-    #     query_params = self.request.query_params
-    #     search_param = query_params.get("search")
-    #     if search_param:
-    #         queryset = queryset.filter(
-    #             Q(title__icontains=search_param) | Q(category__title__icontains=search_param) | Q(
-    #                 title__icontains=search_param)
-    #         )
-    #     price_from = query_params.get("price_from")
-    #     price_to = query_params.get("price_to")
-    #     if price_from:
-    #         queryset = queryset.filter(price__gte=price_from)
-    #     if price_to:
-    #         queryset = queryset.filter(price__lte=price_to)
-    #     categories = query_params.get("categories")  # ?categories=1,2,3
-    #     if categories:
-    #         queryset = queryset.filter(category_id__in=[int(cat_id) for cat_id in categories.split(",")])
-    #     return queryset
 
 
 class ProductRetrieveView(generics.RetrieveAPIView):
@@ -68,14 +53,26 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             return ProductCreateSerializer
         return ProductListSerializer
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     return super().retrieve(request, *args, **kwargs)
-    #
-    # def update(self, request, *args, **kwargs):
-    #     return super().update(request, *args, **kwargs)
-    #
-    # def destroy(self, request, *args, **kwargs):
-    #     return super().destroy(request, *args, **kwargs)
+
+class BlogLikeDislikeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(request_body=BlogLikeDislikeSerializer)
+    def post(self, request, *args, **kwargs):
+        serializer = BlogLikeDislikeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        type_ = serializer.validated_data.get("type")
+        user = request.user
+        product = Product.objects.filter(slug=self.kwargs.get("slug")).first()
+        if not product:
+            raise Http404
+        like_dislike_blog = LikeDislike.objects.filter(product=product, user=user).first()
+        if like_dislike_blog and like_dislike_blog.type == type_:
+            like_dislike_blog.delete()
+        else:
+            LikeDislike.objects.update_or_create(product=product, user=user, defaults={"type": type_})
+        data = {"type": type_, "detail": "Liked or disliked."}
+        return Response(data)
 
 
 class CommentListCreateView(generics.ListCreateAPIView):

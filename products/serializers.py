@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from common.models import Category
-from products.models import Product
+from products.models import Product, LikeDislike
 from products.models.comment import Comment
 from users.models import User
 
@@ -17,12 +17,7 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ["id", "title", "slug", "price", "image", "category"]
-
-    # def to_representation(self, instance):
-    #     data = super().to_representation(instance)
-    #     data["category"] = ProductCategorySerializer(instance.category).data
-    #     return data
+        fields = ["id", "title", "slug", "price", "image", "category", "likes", "dislikes"]
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
@@ -36,6 +31,10 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data["category"] = ProductCategorySerializer(instance.category).data
         return data
+
+
+class BlogLikeDislikeSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=LikeDislike.LikeType.choices)
 
 
 class CommentList(serializers.ModelSerializer):
