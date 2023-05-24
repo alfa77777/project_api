@@ -1,4 +1,3 @@
-from django.db.models import Q
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
@@ -12,7 +11,7 @@ from paginations import CustomPageNumberPagination
 from products.models import Product, LikeDislike
 from products.models.comment import Comment
 from products.serializers import ProductListSerializer, ProductCreateSerializer, CommentCreateSerializer, \
-    CommentListSerializer, BlogLikeDislikeSerializer
+    CommentListSerializer, ProductLikeDislikeSerializer
 
 
 class ProductListCreateView(generics.ListCreateAPIView):
@@ -54,12 +53,12 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
         return ProductListSerializer
 
 
-class BlogLikeDislikeView(APIView):
+class ProductLikeDislikeView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(request_body=BlogLikeDislikeSerializer)
+    @swagger_auto_schema(request_body=ProductLikeDislikeSerializer)
     def post(self, request, *args, **kwargs):
-        serializer = BlogLikeDislikeSerializer(data=request.data)
+        serializer = ProductLikeDislikeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         type_ = serializer.validated_data.get("type")
         user = request.user

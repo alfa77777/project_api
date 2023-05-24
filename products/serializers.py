@@ -17,7 +17,7 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ["id", "title", "slug", "price", "image", "category", "likes", "dislikes"]
+        fields = ("id", "title", "slug", "price", "image", "category", "likes", "dislikes")
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
@@ -33,7 +33,7 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         return data
 
 
-class BlogLikeDislikeSerializer(serializers.Serializer):
+class ProductLikeDislikeSerializer(serializers.Serializer):
     type = serializers.ChoiceField(choices=LikeDislike.LikeType.choices)
 
 
