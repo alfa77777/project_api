@@ -13,7 +13,6 @@ from products.models.comment import Comment
 from products.serializers import ProductListSerializer, ProductCreateSerializer, CommentCreateSerializer, \
     CommentListSerializer, ProductLikeDislikeSerializer
 
-
 class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.order_by("-id")
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
@@ -73,26 +72,26 @@ class ProductLikeDislikeView(APIView):
         data = {"type": type_, "detail": "Liked or disliked."}
         return Response(data)
 
+# class CommentListCreateView(generics.ListCreateAPIView):
+#     queryset = Comment.objects.order_by("-id")
+#     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
+#     filterset_fields = ("product", "timestamp")
+#     ordering_fields = ("product",)
+#     pagination_class = CustomPageNumberPagination
+#
+#     def get_serializer_class(self):
+#         if self.request.method == "POST":
+#             return CommentCreateSerializer
+#         return CommentListSerializer
+#
+#
+# class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Comment.objects.all()
+#     # serializer_class = ProductListSerializer
+#     lookup_field = "id"
+#
+#     def get_serializer_class(self):
+#         if self.request.method in ["PUT", "PATCH"]:
+#             return CommentCreateSerializer
+#         return CommentListSerializer
 
-class CommentListCreateView(generics.ListCreateAPIView):
-    queryset = Comment.objects.order_by("-id")
-    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
-    filterset_fields = ("product", "timestamp")
-    ordering_fields = ("product",)
-    pagination_class = CustomPageNumberPagination
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CommentCreateSerializer
-        return CommentListSerializer
-
-
-class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Comment.objects.all()
-    # serializer_class = ProductListSerializer
-    lookup_field = "id"
-
-    def get_serializer_class(self):
-        if self.request.method in ["PUT", "PATCH"]:
-            return CommentCreateSerializer
-        return CommentListSerializer

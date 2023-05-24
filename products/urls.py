@@ -11,5 +11,4 @@ urlpatterns = [
     path("<slug:slug>/like_dislike/", ProductLikeDislikeView.as_view(), name="blog_like_dislike"),
     path("", ProductListCreateView.as_view(), name="products_list_create"),
     path("<slug:slug>/", ProductDetailView.as_view(), name="product_detail"),
-
 ]
