@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 from common.models import Category
-from products.models import Product
-# from products.models.comment import Comment
+from products.models import Product, LikeDislike
+from products.models.comment import Comment
 from users.models import User
 
 
@@ -17,12 +17,7 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ["id", "title", "slug", "price", "image", "category"]
-
-    # def to_representation(self, instance):
-    #     data = super().to_representation(instance)
-    #     data["category"] = ProductCategorySerializer(instance.category).data
-    #     return data
+        fields = ("id", "title", "slug", "price", "image", "category", "likes", "dislikes")
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
@@ -38,40 +33,44 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         return data
 
 
-# class CommentList(serializers.ModelSerializer):
-#     model = Comment
-#     fields = "__all__"
-#
-#
-# class CommentUserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ("email",)
-#
-#
-# class CommentProductSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Product
-#         fields = ("title",)
-#
-#
-# class CommentListSerializer(serializers.ModelSerializer):
-#     user = CommentUserSerializer()
-#     product = CommentProductSerializer()
-#
-#     class Meta:
-#         model = Comment
-#         fields = "__all__"
-#
-#
-# class CommentCreateSerializer(serializers.ModelSerializer):
-#
-#     class Meta:
-#         model = Comment
-#         fields = '__all__'
-#
-#     def to_representation(self, instance):
-#         data = super().to_representation(instance)
-#         data["user"] = CommentUserSerializer(instance.user).data
-#         data["product"] = CommentProductSerializer(instance.product).data
-#         return data
+class ProductLikeDislikeSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=LikeDislike.LikeType.choices)
+
+
+class CommentList(serializers.ModelSerializer):
+    model = Comment
+    fields = "__all__"
+
+
+class CommentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("email",)
+
+
+class CommentProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ("title",)
+
+
+class CommentListSerializer(serializers.ModelSerializer):
+    user = CommentUserSerializer()
+    product = CommentProductSerializer()
+
+    class Meta:
+        model = Comment
+        fields = "__all__"
+
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["user"] = CommentUserSerializer(instance.user).data
+        data["product"] = CommentProductSerializer(instance.product).data
+        return data

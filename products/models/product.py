@@ -3,6 +3,8 @@ import random
 from django.db import models
 from django.utils.text import slugify
 
+from common.models import TimestampModel
+
 
 class Product(models.Model):
     title = models.CharField(max_length=255)
@@ -22,3 +24,27 @@ class Product(models.Model):
             slug = f"{self.slug}-{random.randint(1, 100000)}"
         self.slug = slug
         return super().save(*args, **kwargs)
+
+    @property
+    def likes(self):
+        return self.like_dislikes.filter(type=LikeDislike.LikeType.LIKE).count()
+
+    @property
+    def dislikes(self):
+        return self.like_dislikes.filter(type=LikeDislike.LikeType.DISLIKE).count()
+
+
+class LikeDislike(TimestampModel):
+    class LikeType(models.IntegerChoices):
+        DISLIKE = -1
+        LIKE = 1
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="like_dislikes")
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="like_dislikes")
+    type = models.SmallIntegerField(choices=LikeType.choices)
+
+    class Meta:
+        unique_together = ["product", "user"]
+
+    def __str__(self):
+        return f"{self.user}"
